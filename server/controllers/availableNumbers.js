@@ -60,7 +60,7 @@ const submitPickedNumber = async (req, res) => {
             if (isAvailable) {
                 return await assignNumber(user, specialNumber, res);
             } else {
-                return res.status(400).json({ message: `Number ${specialNumber} already picked` });
+                return res.status(400).json({ message: `Number not available or already chosen` });
             }
         }
 
