@@ -5,9 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "concurrently \"nodemon server.js\" \"cd ../client && yarn && yarn build && yarn start\"",
-    "build-client": "cd ../client && yarn && yarn build",
-    "start-full": "yarn build-client && node server.js"
+    "dev": "nodemon server.js",
+    "build": "npm install --prefix ./client && npm run build --prefix ./client && npm install"
   },
   "author": "",
   "license": "ISC",

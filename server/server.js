@@ -28,7 +28,7 @@ app.use(cookieParser());
 connectDB();
 // Serve static files from the React app
 if (environment=== 'production') {
-  app.use(express.static(join(__dirname, '../client/dist')));
+  app.use(express.static(join(__dirname, '/client/dist')));
 }
 
 
@@ -38,7 +38,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/numbers", numberRoutes);
 app.use("/api/auth", authRoutes);
 app.get('*', (req, res) => {
-    res.sendFile(join(__dirname, '../client/dist/index.html'));
+    res.sendFile(join(__dirname, '/client/dist/index.html'));
 });
 // Start the server
 const PORT = process.env.PORT || 9000;
