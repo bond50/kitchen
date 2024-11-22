@@ -27,7 +27,7 @@ app.use(cookieParser());
 connectDB();
 // Serve static files from the React app
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(join(__dirname, '../frontend/build')));
+  app.use(express.static(join(__dirname, '../client/dist')));
 }
 
 
