@@ -6,17 +6,21 @@ const {comparePasswords} = require("../helper/bcryptHelper");
 // Create a new user with no assigned number initially
 const createUser = async (req, res) => {
     try {
-        const {name, phoneNumber} = req.body;
+        let { name, phoneNumber } = req.body;
+
+        // Trim spaces from name and phoneNumber
+        name = name.trim();
+        phoneNumber = phoneNumber.trim();
 
         // Validate phone number format
         if (!/^[0-9]{10}$/.test(phoneNumber)) {
-            return res.status(400).json({message: "Phone number must be 10 digits long"});
+            return res.status(400).json({ message: "Phone number must be 10 digits long" });
         }
 
         // Check if the phone number already exists
-        const existingUser = await User.findOne({phoneNumber});
+        const existingUser = await User.findOne({ phoneNumber });
         if (existingUser) {
-            return res.status(400).json({message: "User with that Phone number already exists.Dont add a user twice because it will interfere with number generation"});
+            return res.status(400).json({ message: "User with that phone number already exists. Don't add a user twice because it will interfere with number generation." });
         }
 
         // Create the user with no assigned number (null or 0)
@@ -35,20 +39,20 @@ const createUser = async (req, res) => {
         const userCount = await User.countDocuments(); // Get total users after addition
 
         // Generate a new sequential number for the AvailableNumber model
-        const totalUsers = await User.countDocuments();
         const newNumber = new AvailableNumber({
-            number: totalUsers, // Assign based on user count
+            number: userCount, // Assign based on user count
             chosen: false, // Default to not chosen
         });
 
         // Save the available number
         await newNumber.save();
-        res.status(201).json({message: 'User added successfully'});
+        res.status(201).json({ message: "User added successfully" });
     } catch (error) {
         console.error(error);
-        res.status(500).json({message: "Error creating user"});
+        res.status(500).json({ message: "Error creating user" });
     }
 };
+
 
 
 // Get all users
@@ -93,34 +97,37 @@ const assignNumberToUser = async (req, res) => {
 // User login and JWT generation
 // Example loginUser controller
 const loginUser = async (req, res) => {
-       console.log('HITTED')
     try {
-        const {username, password} = req.body;
+        let { username, password } = req.body;
+
+        // Trim spaces from username and password
+        username = username.trim();
+        password = password.trim();
 
         // Find user by username
-        const user = await User.findOne({username});
+        const user = await User.findOne({ username });
 
         if (!user) {
-            return res.status(400).json({message: "User not found"});
+            return res.status(400).json({ message: "User not found" });
         }
 
         // Compare entered password with hashed password
         const isPasswordValid = await comparePasswords(password, user.password);
 
         if (!isPasswordValid) {
-            return res.status(400).json({message: "Invalid password"});
+            return res.status(400).json({ message: "Invalid password" });
         }
 
         // Create JWT token with 1-week expiry
-        const payload = {userId: user._id};
-        const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: "7d"}); // Expires in 7 days
+        const payload = { userId: user._id };
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" }); // Expires in 7 days
 
         // Set the token as a cookie
         res.cookie("token", token, {
             expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days in milliseconds
             httpOnly: true, // Ensure it cannot be accessed by JavaScript
             secure: process.env.NODE_ENV === "production",
-            path: '/',
+            path: "/",
         });
 
         // Return user data and token
@@ -132,12 +139,13 @@ const loginUser = async (req, res) => {
             chosen: user.chosen,
         };
 
-        res.status(200).json({userData, token});
+        res.status(200).json({ userData, token });
     } catch (error) {
         console.error(error);
-        res.status(500).json({message: "Error logging in"});
+        res.status(500).json({ message: "Error logging in" });
     }
 };
+
 
 const getUserById = async (req, res) => {
     try {

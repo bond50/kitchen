@@ -10,19 +10,21 @@ const LoginComponent = ({ onLoginSuccess }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-
-
         try {
+            // Trim extra spaces before sending data
+            const trimmedUsername = username.trim();
+            const trimmedPassword = password.trim();
+
             // Call the loginUser function to authenticate the user
-            const response = await loginUser({ username, password });
-
-
+            const response = await loginUser({
+                username: trimmedUsername,
+                password: trimmedPassword
+            });
 
             // Check for a successful login based on server response
             if (response.token) {
-                // Instead of checking for the token, we assume it's now in the cookie
-                localStorage.setItem('userData', JSON.stringify(response.userData)); // Store user data to check assignedNumber
-                localStorage.setItem('token', JSON.stringify(response.token)); // Store user data to check assignedNumber
+                localStorage.setItem('userData', JSON.stringify(response.userData)); // Store user data
+                localStorage.setItem('token', JSON.stringify(response.token)); // Store token
 
                 // Pass response to parent via callback
                 onLoginSuccess(response.userData);
@@ -30,7 +32,6 @@ const LoginComponent = ({ onLoginSuccess }) => {
                 setError(new Error('Login failed. Please check your credentials.'));
             }
         } catch (error) {
-
             setError(error); // Handle any errors during the login process
         }
     };
@@ -47,7 +48,7 @@ const LoginComponent = ({ onLoginSuccess }) => {
                             className="form-control"
                             placeholder="Enter username"
                             value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            onChange={(e) => setUsername(e.target.value.trimStart())} // Trim leading spaces
                             required
                         />
                     </div>
@@ -57,7 +58,7 @@ const LoginComponent = ({ onLoginSuccess }) => {
                             className="form-control"
                             placeholder="Enter password"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => setPassword(e.target.value.trimStart())} // Trim leading spaces
                             required
                         />
                     </div>

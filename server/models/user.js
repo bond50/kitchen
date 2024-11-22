@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema(
         },
         phoneNumber: {
             type: String,
+            trim:true,
             required: true, // Phone number is required
             unique: true, // Ensure the phone number is unique across users
         },
@@ -26,9 +27,11 @@ const userSchema = new mongoose.Schema(
             type: String,
             unique: true,
             index: true,
+            trim:true,
         },
         password: {
             type: String,
+            trim:true,
             required: true, // Password is required
             minlength: [6, "Password must be at least 6 characters long"], // Password length validation
         },

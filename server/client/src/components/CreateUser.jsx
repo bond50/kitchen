@@ -1,4 +1,5 @@
-import  { useState } from 'react';
+import { useState } from 'react';
+import PropTypes from 'prop-types'; // Import PropTypes
 import { createUser } from '../api';
 
 const CreateUser = ({ onUserCreated }) => {
@@ -48,7 +49,7 @@ const CreateUser = ({ onUserCreated }) => {
                             className="form-control"
                             placeholder="Enter full name"
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e) => setName(e.target.value.trimStart())} // Trim leading spaces
                             required
                         />
                     </div>
@@ -58,7 +59,7 @@ const CreateUser = ({ onUserCreated }) => {
                             className="form-control"
                             placeholder="Enter phone number"
                             value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            onChange={(e) => setPhoneNumber(e.target.value.trimStart())} // Trim leading spaces
                             required
                             pattern="^[0-9]{10}$" // Phone number validation
                             title="Phone number must be 10 digits"
@@ -71,6 +72,11 @@ const CreateUser = ({ onUserCreated }) => {
             </div>
         </div>
     );
+};
+
+// Add PropTypes to validate props
+CreateUser.propTypes = {
+    onUserCreated: PropTypes.func.isRequired, // onUserCreated is a required function
 };
 
 export default CreateUser;
