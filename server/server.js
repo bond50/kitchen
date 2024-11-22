@@ -14,6 +14,7 @@ const {join} = require("node:path");
 
 const app = express();
 
+const environment = process.env.SERVER_ENV || 'development';
 
 // Middleware
 app.use(cors({
@@ -26,7 +27,7 @@ app.use(cookieParser());
 // Connect to MongoDB
 connectDB();
 // Serve static files from the React app
-if (process.env.NODE_ENV === 'production') {
+if (environment=== 'production') {
   app.use(express.static(join(__dirname, '../client/dist')));
 }
 
