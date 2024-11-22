@@ -37,7 +37,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/numbers", numberRoutes);
 app.use("/api/auth", authRoutes);
 app.get('*', (req, res) => {
-    res.sendFile(join(__dirname, '../frontend/build/index.html'));
+    res.sendFile(join(__dirname, '../client/dist/index.html'));
 });
 // Start the server
 const PORT = process.env.PORT || 9000;
