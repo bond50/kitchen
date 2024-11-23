@@ -1,23 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { isAuth, verifyAuth } from "../api.js";
 
 export const ProtectedRoute = () => {
     const [isVerified, setIsVerified] = useState(null); // null for initial state
 
-    useEffect(() => {
-        const checkAuth = async () => {
-            const localAuth = isAuth();
-            if (localAuth) {
-                const validToken = await verifyAuth(); // Verify token with backend
-                setIsVerified(validToken);
-            } else {
-                setIsVerified(false); // Not authenticated
-            }
-        };
+    // Wrap the checkAuth function in useCallback
+    const checkAuth = useCallback(async () => {
+        const localAuth = isAuth();
+        if (localAuth) {
+            const validToken = await verifyAuth(); // Verify token with backend
+            setIsVerified(validToken);
+        } else {
+            setIsVerified(false); // Not authenticated
+        }
+    }, []); // Empty dependency array to ensure the function is created only once
 
-        checkAuth();
-    }, []);
+    useEffect(() => {
+        checkAuth(); // Call checkAuth on component mount
+    }, [checkAuth]); // Use the callback function inside useEffect
 
     if (isVerified === null) {
         // Show a loading spinner while verifying
