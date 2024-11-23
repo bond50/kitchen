@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types'; // Import PropTypes
+import { Link } from 'react-router-dom'; // Import Link for navigation
 import { createUser } from '../api';
+import {toast} from "react-toastify";
 
 const CreateUser = ({ onUserCreated }) => {
     const [name, setName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+    const [loading, setLoading] = useState(false); // Loading state
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null); // Clear previous errors
         setSuccess(null); // Clear previous success messages
+        setLoading(true); // Show loading spinner
 
         // Trim spaces from name and phone number before sending them
         const trimmedName = name.trim();
@@ -30,9 +34,13 @@ const CreateUser = ({ onUserCreated }) => {
             // Clear the fields after user creation
             setName('');
             setPhoneNumber('');
+             toast.success('User added successfully')
         } catch (error) {
             const errorMessage = error?.response?.data?.message || error.message || 'An unknown error occurred';
             setError(`Error creating user: ${errorMessage}`);
+             toast.error(errorMessage)
+        } finally {
+            setLoading(false); // Hide loading spinner
         }
     };
 
@@ -65,10 +73,29 @@ const CreateUser = ({ onUserCreated }) => {
                             title="Phone number must be 10 digits"
                         />
                     </div>
-                    <button type="submit" className="btn btn-primary w-100">
-                        Create User
+                    <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+                        {loading ? (
+                            <div className="spinner-border spinner-border-sm" role="status">
+                                <span className="visually-hidden">Loading...</span>
+                            </div>
+                        ) : (
+                            'Create User'
+                        )}
                     </button>
                 </form>
+                {/* Links to other pages */}
+                <div className="text-center mt-3">
+                    <p>
+                        <Link to="/" className="text-decoration-none">
+                            Back to Home
+                        </Link>
+                    </p>
+                    <p>
+                        <Link to="/login" className="text-decoration-none">
+                            Already have an account? Login
+                        </Link>
+                    </p>
+                </div>
             </div>
         </div>
     );

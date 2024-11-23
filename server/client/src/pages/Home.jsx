@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllUsers } from "../api"; // API function to fetch all users
+import { getAllUsers, isAuth } from "../api"; // API function to fetch all users
 
 const HomePage = () => {
     const [users, setUsers] = useState([]); // State to store all users
@@ -8,37 +8,52 @@ const HomePage = () => {
     const [error, setError] = useState(null); // Track any errors
     const navigate = useNavigate();
 
-    // Fetch token and user data from localStorage
-    const token = localStorage.getItem("token"); // Token should be a string
-    const userData = JSON.parse(localStorage.getItem("userData")); // User data should be an object or null
-
-    // Function to mask phone number
     const maskPhoneNumber = (phone) => {
         if (!phone) return phone;
         // Mask all but first 3 and last 2 digits
         return phone.replace(/(\d{3})\d{4}(\d{2})/, '$1****$2');
     };
 
-    // Fetch users on component mount
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const allUsers = await getAllUsers(); // Fetch all users from the server
-                setUsers(allUsers); // Update state with user data
-                setLoading(false); // Stop loading
-            } catch (err) {
-                console.error("Error fetching users:", err);
-                setError("Failed to load users. Please try again.");
-                setLoading(false);
-            }
-        };
+    const fetchUsers = useCallback(async () => {
+        try {
+            const allUsers = await getAllUsers(); // Fetch all users from the server
 
-        fetchUsers();
+            // Identify the logged-in user
+            const loggedInUserId = isAuth() ? isAuth().userId : null;
+
+            // If logged in, move the logged-in user to the start of the list
+            const loggedInUser = loggedInUserId ? allUsers.find(user => user._id === loggedInUserId) : null;
+            const otherUsers = loggedInUser ? allUsers.filter(user => user._id !== loggedInUserId) : allUsers;
+
+            // Sort the rest of the users alphabetically by name
+            const sortedOtherUsers = otherUsers.sort((a, b) => a.name.localeCompare(b.name));
+
+            // Combine the logged-in user with the rest
+            const sortedUsers = loggedInUser ? [loggedInUser, ...sortedOtherUsers] : sortedOtherUsers;
+
+            setUsers(sortedUsers); // Update state with the sorted users
+            setLoading(false); // Stop loading
+        } catch (err) {
+            console.error("Error fetching users:", err);
+            setError("Failed to load users. Please try again.");
+            setLoading(false);
+        }
     }, []);
+
+    // Fetch users on component mount or when token/userData changes
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
 
     // Display loading message
     if (loading) {
-        return <div className="text-center">Loading...</div>;
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        );
     }
 
     // Display error message
@@ -48,7 +63,7 @@ const HomePage = () => {
 
     // Function to handle navigation based on user data
     const handleNavigate = (user) => {
-        if (!token || !userData) {
+        if (!isAuth()) {
             // If not logged in, redirect to login page with the intended destination
             navigate("/login", { state: { from: user.chosen ? "/dashboard" : "/pick" } });
         } else {
@@ -82,13 +97,12 @@ const HomePage = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-
-                                        {users.map((user) => (
+                                        {users && users.map((user) => (
                                             <tr key={user._id} className="table-row">
                                                 <td className="p-2 fs-8">{user.name}</td>
                                                 <td className="p-2 fs-8">{maskPhoneNumber(user.phoneNumber)}</td>
                                                 <td className="p-2">
-                                                    {token && userData && userData.userId === user._id? (
+                                                    {isAuth() && isAuth().userId === user._id ? (
                                                         <button
                                                             className={`btn btn-sm ${user.chosen ? "btn-success" : "btn-primary"}`}
                                                             onClick={() => handleNavigate(user)}

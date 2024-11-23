@@ -44,12 +44,16 @@ const submitPickedNumber = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
+        if (user.chosen){
+            return res.status(404).json({ message: "Sorry,You already picked your number" });
+        }
 
         // Special cases from environment variables
         const specialCases = {
             [process.env.ARNEST_NO]: 12, // Always gets number 12
             [process.env.GALAVU_NO]: 14, // Always gets number 14
             [process.env.ANNE_NO]: 10,   // Always gets number 10
+            [process.env.ASENA_NO]: 18,   // Always gets number 18
         };
 
         // Check if user has a special number

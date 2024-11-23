@@ -1,42 +1,34 @@
-import React, { useEffect, useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import apiClient from '../apiClient'; // Axios instance
+import { useEffect, useState } from "react";
+import { Navigate, Outlet } from "react-router-dom";
+import { isAuth, verifyAuth } from "../api.js";
 
 export const ProtectedRoute = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
+    const [isVerified, setIsVerified] = useState(null); // null for initial state
 
-  useEffect(() => {
-    const verifyToken = async () => {
-      try {
-        // Call the backend to verify the token
-        await apiClient.get('/auth/verify');
-        setIsLoading(false); // User is authenticated
-      } catch (error) {
-        console.error('Authentication failed:', error);
+    useEffect(() => {
+        const checkAuth = async () => {
+            const localAuth = isAuth();
+            if (localAuth) {
+                const validToken = await verifyAuth(); // Verify token with backend
+                setIsVerified(validToken);
+            } else {
+                setIsVerified(false); // Not authenticated
+            }
+        };
 
-        // Clear cookies and localStorage if authentication fails
-        clearAuthData();
+        checkAuth();
+    }, []);
 
-        // Redirect to login page
-        navigate('/login');
-      }
-    };
+    if (isVerified === null) {
+        // Show a loading spinner while verifying
+        return (
+            <div className="d-flex justify-content-center align-items-center vh-100">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        );
+    }
 
-    verifyToken();
-  }, [navigate]);
-
-  const clearAuthData = () => {
-    // Remove the token from cookies
-    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
-
-    // Remove user data from localStorage
-    localStorage.removeItem('userData');
-  };
-
-  if (isLoading) {
-    return <p>Loading...</p>; // Show a loading state while verifying
-  }
-
-  return <Outlet />; // Render child routes if authenticated
+    return isVerified ? <Outlet /> : <Navigate to="/login" />;
 };

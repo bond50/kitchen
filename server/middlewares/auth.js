@@ -1,16 +1,13 @@
-const { expressjwt: expressJwt } = require("express-jwt"); // Correct import for express-jwt
+const {expressjwt: expressJwt} = require("express-jwt"); // Correct import for express-jwt
 
 const User = require('../models/user'); // Make sure to import your User model
 
 // Middleware to verify JWT from the cookie
 exports.requireSignin = expressJwt({
     secret: process.env.JWT_SECRET,
-    algorithms: ["HS256"], // Ensure the algorithm matches the one used during token generation
-    userProperty: "auth",  // This will store the decoded token info on req.auth
-    getToken: (req) => {
-        // Get the token from the cookie
-        return req.cookies.token; // Cookie where the token is stored
-    }
+    algorithms: ["HS256"], // added later
+    userProperty: "auth",
+
 });
 
 exports.authMiddleware = async (req, res, next) => {
@@ -18,16 +15,24 @@ exports.authMiddleware = async (req, res, next) => {
 
     try {
         const user = await User.findById(authUserId); // Using async/await here
-
         if (!user) {
             return res.status(400).json({
-                error: 'User not found'
+                error: 'User not found',
+                notFound: true,
+                success: false,
+                message: 'User not found. Please sign in again.',
+
             });
         }
+
+
         req.profile = user; // Attach the user profile to `req.profile`
+
+
         next(); // Continue to the next middleware or route handler
     } catch (err) {
         return res.status(500).json({
+            message: 'An error occurred while verifying the user. Please try again later.',
             error: 'Error fetching user profile'
         });
     }

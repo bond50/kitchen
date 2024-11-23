@@ -1,68 +1,75 @@
 import axios from 'axios';
+import {toast} from 'react-toastify';
+import {getCookie, signout} from "./api.js";  // For user-friendly notifications
 
-// Get the base URL from the environment variable
-const apiUrl = import.meta.env.VITE_API_URL;
-
-
-// Create Axios instance
-const apiClient = axios.create({
-    baseURL: apiUrl, // Use the value from the environment variable
+// Create an axios instance
+const axiosInstance = axios.create({
+    baseURL: import.meta.env.VITE_API_URL,  // API base URL
+    xsrfCookieName: 'csrftoken',
+    xsrfHeaderName: 'X-CSRFToken',
     headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
     },
-    timeout: 5000, // Optional timeout for requests
-    withCredentials: true, // Ensure cookies are sent with requests
 });
 
-// Request Interceptor
-apiClient.interceptors.request.use(
-    (config) => {
-        // Retrieve the token from cookies (since it's stored in the cookie now)
-        const token = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('token='))
-            ?.split('=')[1]; // Extract the token from cookies
-
-        // If the token exists, add it to the Authorization header
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
+// Request interceptor to include the token
+axiosInstance.interceptors.request.use((req) => {
+    const token = getCookie('token');  // Assuming getCookie is a function to fetch the token
+    if (token) {
+        req.headers.Authorization = `Bearer ${token}`;
     }
-);
+    return req;
+}, (error) => {
+    return Promise.reject(error);
+});
 
-// Response Interceptor
-apiClient.interceptors.response.use(
+// Response interceptor to handle errors globally
+axiosInstance.interceptors.response.use(
     (response) => {
         return response;
     },
     (error) => {
+        let errorMessage = 'An unexpected error occurred. Please try again.';
 
         if (error.response) {
-            const { status, data } = error.response;
-
-            if (status === 401) {
-                // Token expired or unauthorized, redirect to login
-                window.location.href = "/login"; // Redirect to the login page
-            } else if (status === 403) {
-                alert("You don't have permission to perform this action.");
-            } else if (status === 500) {
-                alert("Something went wrong on the server. Please try again later.");
-            } else {
-                alert(data?.message || "An unexpected error occurred");
+            // Check for known status codes and customize messages accordingly
+            switch (error.response.status) {
+                case 400:
+                    errorMessage = error.response.data?.message || 'Bad Request. Please check your input.';
+                    break;
+                case 401:
+                    errorMessage = error.response.data?.message || 'Your session has expired. Please log in again.';
+                    signout(() => {
+                        console.warn('User signed out due to session expiration.');
+                    }).then(r => console.log(
+                        r
+                    ));
+                    break;
+                case 404:
+                    errorMessage = error.response.data?.message || 'Requested resource not found.';
+                    break;
+                case 500:
+                    errorMessage = error.response.data?.message || 'Internal server error. Please try again later.';
+                    break;
+                default:
+                    errorMessage = error.response.data?.message || error.message;
+                    break;
             }
-        } else if (error.request) {
-            alert("Unable to connect to the server. Please check your network.");
+
+            // Display error message using toast (or alert if you prefer)
+            toast.error(errorMessage);
+
+            // Optionally log the error for debugging purposes
+            console.error('API Error:', errorMessage);
         } else {
-            alert(error.message || "An error occurred while setting up the request.");
+            // Handle cases where there’s no response (network issues, etc.)
+            errorMessage = 'Network error. Please check your internet connection.';
+            toast.error(errorMessage);
         }
 
         return Promise.reject(error);
     }
 );
 
-export default apiClient;
+export default axiosInstance;

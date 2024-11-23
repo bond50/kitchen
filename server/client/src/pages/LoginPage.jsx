@@ -1,24 +1,23 @@
-import  {useEffect} from 'react';
+import {useEffect, useState, useCallback} from 'react';
 import Login from '../components/LoginComponent';
 import {useLocation, useNavigate} from "react-router-dom";
+import {isAuth} from "../api.js";
+import {toast} from "react-toastify";
 
 const LoginPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    // Check if the user is already authenticated
-    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-    const token = JSON.parse(localStorage.getItem("token") || "{}");
-    useEffect(() => {
 
-        if (userData.userId && token) {
-            let intended = location.state;
+    useEffect(() => {
+        if (isAuth()) {
+            const intended = location.state;
             if (intended) {
                 navigate(intended.from);
             } else {
-                navigate('/dashboard')
+                navigate('/');
             }
         }
-    }, [location.state, navigate, token, userData.userId]);
+    }, [location.state, navigate]);
 
     const handleLoginSuccess = (data) => {
 
@@ -26,13 +25,16 @@ const LoginPage = () => {
         if (intended) {
             navigate(intended.from);
         } else {
-            if (data.assignedNumber) {
+            if (isAuth().assignedNumber && data.assignedNumber) {
                 navigate("/dashboard");
             } else {
                 navigate("/");
             }
         }
-    };
+        toast.success('Login success')
+    }
+
+
 
     return (
         <div className="container">

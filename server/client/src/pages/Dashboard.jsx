@@ -1,6 +1,6 @@
-import React, {useEffect, useState, useCallback} from 'react';
+import {useEffect, useState, useCallback} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {getAllUsers, getUserById, fetchAvailableNumbers, fetchChosenNumbers} from '../api'; // Assuming API functions are correctly set up
+import {getAllUsers, getUserById, fetchAvailableNumbers, fetchChosenNumbers, isAuth} from '../api'; // Assuming API functions are correctly set up
 
 const Dashboard = () => {
     const [user, setUser] = useState(null);
@@ -12,29 +12,21 @@ const Dashboard = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-    const token = JSON.parse(localStorage.getItem("token") || "{}");
-
     const maskPhoneNumber = useCallback((phone) => {
         if (!phone) return phone;
         return phone.replace(/(\d{3})\d{4}(\d{2})/, '$1****$2');
     }, []);
 
-
-    useEffect(() => {
-        if (!token) {
-            navigate('/login');
-        }
-
-        if (user && !user.chosen) { // Add null check for user
-            navigate('/pick');
-        }
-    }, [navigate, token, user]);
-
     const fetchUserData = useCallback(async () => {
         try {
-            const userDetails = await getUserById(userData.userId);
+            const userDetails = await getUserById(isAuth() && isAuth().userId);
+            if (!userDetails.chosen) {
+                // If the user hasn't chosen a number, redirect them or display a message
+                navigate('/pick', {replace: true});
+                return;
+            }
             setUser(userDetails);
+
             const allUsers = await getAllUsers();
             setPicked(allUsers.filter(person => person.chosen));
             setNotPicked(allUsers.filter(person => !person.chosen));
@@ -50,7 +42,7 @@ const Dashboard = () => {
             setError('Failed to load data. Please try again.');
             setLoading(false);
         }
-    }, [userData.userId]);
+    }, [navigate]);
 
     useEffect(() => {
         fetchUserData();
@@ -59,7 +51,12 @@ const Dashboard = () => {
         return () => clearInterval(interval);
     }, [fetchUserData]);
 
-    if (loading) return <div className="text-center">Loading...</div>;
+    if (loading) return <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+        </div>
+    </div>;
+
     if (error) return <div className="text-center text-danger">{error}</div>;
 
     const sortedPicked = [...picked].sort((a, b) => a.assignedNumber - b.assignedNumber);
@@ -68,6 +65,12 @@ const Dashboard = () => {
     return (
         <div className="container mt-3">
             <h2 className="text-center mb-3 fs-4">Dashboard</h2>
+
+            {user && (
+                <div className="alert alert-info mb-3">
+                    <strong>Congratulations! You have been assigned number {user.assignedNumber} on the list.</strong>
+                </div>
+            )}
 
             <div className="row mb-3">
                 <div className="col-12 col-md-6">

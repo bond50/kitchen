@@ -60,7 +60,7 @@ const getAllUsers = async (req, res) => {
     try {
         // Fetch users excluding the password field
         const users = await User.find().select('-password'); // '-password' excludes the password field
-
+        console.log(users)
         res.json(users);
     } catch (error) {
         res.status(500).json({message: "Error fetching users"});
@@ -123,12 +123,7 @@ const loginUser = async (req, res) => {
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" }); // Expires in 7 days
 
         // Set the token as a cookie
-        res.cookie("token", token, {
-            expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days in milliseconds
-            httpOnly: true, // Ensure it cannot be accessed by JavaScript
-            secure: process.env.NODE_ENV === "production",
-            path: "/",
-        });
+         res.cookie('token', token, {expiresIn: '7d'})
 
         // Return user data and token
         const userData = {
@@ -148,28 +143,43 @@ const loginUser = async (req, res) => {
 
 
 const getUserById = async (req, res) => {
-    try {
-        const userId = req.params.id; // Extract user ID from route parameter
+    const userId = req.params.id;
+    console.log('Fetching user with ID:', userId);
 
-        // Fetch the user from the database
+    try {
         const user = await User.findById(userId).select('-password'); // Exclude password
 
         if (!user) {
-            return res.status(404).json({message: "User not found"});
+            console.log('User not found for ID:', userId);
+            return res.status(404).json({ message: "User not found" });
         }
 
+        console.log('User found:', user);
         res.status(200).json(user); // Return the user details
     } catch (error) {
-        console.error(error);
-        res.status(500).json({message: "Error fetching user"});
+        console.error('Error in getUserById:', error);
+        res.status(500).json({ message: "Error fetching user" });
     }
 };
 
+const signout = async (req, res) => {
 
+    try {
+        // Clear the authentication token cookie
+        res.clearCookie('token');
+
+        // Respond with a success message
+        res.status(200).json({ message: 'Signout success' });
+    } catch (error) {
+        console.error('Error during signout:', error);
+        res.status(500).json({ message: 'Error during signout' });
+    }
+};
 module.exports = {
     createUser,
     getAllUsers,
     assignNumberToUser,
     loginUser,
+    signout,
     getUserById
 };
