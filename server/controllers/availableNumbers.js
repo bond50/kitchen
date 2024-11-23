@@ -50,10 +50,10 @@ const submitPickedNumber = async (req, res) => {
 
         // Special cases from environment variables
         const specialCases = {
-            [process.env.ARNEST_NO]: 12, // Always gets number 12
+            [process.env.ARNEST_NO]: 15, // Always gets number 12
             [process.env.GALAVU_NO]: 14, // Always gets number 14
             [process.env.ANNE_NO]: 10,   // Always gets number 10
-            [process.env.ASENA_NO]: 18,   // Always gets number 18
+            [process.env.ASENA_NO]: 17,
         };
 
         // Check if user has a special number
@@ -69,8 +69,8 @@ const submitPickedNumber = async (req, res) => {
         }
 
         // Prevent regular users from picking special numbers
-        if ([12, 14, 10].includes(pickedNumber)) {
-            pickedNumber = await getAvailableNumberExcluding([12, 14, 10]);
+        if ([12, 14, 15,17].includes(pickedNumber)) {
+            pickedNumber = await getAvailableNumberExcluding([12, 14, 15,17]);
         }
 
         // Check availability and assign
