@@ -39,12 +39,7 @@ axiosInstance.interceptors.response.use(
                     errorMessage = error.response.data?.message || 'Bad Request. Please check your input.';
                     break;
                 case 401:
-                    errorMessage = error.response.data?.message || 'Your session has expired. Please log in again.';
-                    signout(() => {
-                        console.warn('User signed out due to session expiration.');
-                    }).then(r => console.log(
-                        r
-                    ));
+                    errorMessage = error.response.data?.message || 'You are logged out. Please log in again.';
                     break;
                 case 404:
                     errorMessage = error.response.data?.message || 'Requested resource not found.';
