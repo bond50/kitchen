@@ -31,6 +31,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/luxon@~3.4.0":
+  version "3.4.2"
+  resolved "https://registry.npmjs.org/@types/luxon/-/luxon-3.4.2.tgz"
+  integrity sha512-TifLZlFudklWlMBfhubvgqTXRzLDI5pCbGa4P8a3wPyUQSW+1xQ5eDsreP9DWHX3tjq1ke96uYG/nwundroWcA==
+
 "@types/node@*":
   version "22.9.1"
   resolved "https://registry.npmjs.org/@types/node/-/node-22.9.1.tgz"
@@ -311,6 +316,14 @@ cors@^2.8.5:
   dependencies:
     object-assign "^4"
     vary "^1"
+
+cron@^3.2.1:
+  version "3.2.1"
+  resolved "https://registry.npmjs.org/cron/-/cron-3.2.1.tgz"
+  integrity sha512-w2n5l49GMmmkBFEsH9FIDhjZ1n1QgTMOCMGuQtOXs5veNiosZmso6bQGuqOJSYAXXrG84WQFVneNk+Yt0Ua9iw==
+  dependencies:
+    "@types/luxon" "~3.4.0"
+    luxon "~3.5.0"
 
 debug@^4:
   version "4.3.7"
@@ -641,6 +654,11 @@ https-proxy-agent@^5.0.0:
     agent-base "6"
     debug "4"
 
+https@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/https/-/https-1.0.0.tgz"
+  integrity sha512-4EC57ddXrkaF0x83Oj8sM6SLQHAWXw90Skqu2M4AEWENZ3F02dFJE/GARA8igO79tcgYqGrD7ae4f5L3um2lgg==
+
 iconv-lite@0.4.24:
   version "0.4.24"
   resolved "https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.4.24.tgz"
@@ -777,6 +795,11 @@ lodash@^4.17.21:
   version "4.17.21"
   resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
+
+luxon@~3.5.0:
+  version "3.5.0"
+  resolved "https://registry.npmjs.org/luxon/-/luxon-3.5.0.tgz"
+  integrity sha512-rh+Zjr6DNfUYR3bPwJEnuwDdqMbxZW7LOQfUN4B54+Cl+0o5zaU9RJ6bcidfDtC1cWCZXQ+nvX8bf6bAji37QQ==
 
 make-dir@^3.1.0:
   version "3.1.0"
